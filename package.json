@@ -4,6 +4,8 @@
     "start": "node ./src/main.js"
   },
   "dependencies": {
+    "canvas": "^2.11.2",
+    "got": "^14.4.3",
     "node-napcat-ts": "^0.3.8"
   }
 }

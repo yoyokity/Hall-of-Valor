@@ -3,6 +3,7 @@ import { NCWebsocket, Structs } from 'node-napcat-ts'
 import { Plugin } from './PluginType.js'
 import log from './log.js'
 import { Message } from './MessageType.js'
+import { API } from './Api.js'
 
 export class Bot {
     /** @type {NCWebsocket} */
@@ -35,6 +36,8 @@ export class Bot {
     #msgListener = []
     /** @type {Map<string, Plugin>} */
     #plugins = new Map()
+    /** @type {API} */
+    Api
 
     /**
      * 创建一个机器人实例
@@ -52,6 +55,7 @@ export class Bot {
         this.#host = host
         this.#port = port
         this.#debug = debug
+        this.Api = new API(this)
     }
 
     get host () {

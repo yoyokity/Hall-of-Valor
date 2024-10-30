@@ -84,6 +84,14 @@ export class Message {
     }
 
     /**
+     * 获取消息id
+     * @return {number}
+     */
+    get messageId(){
+        return this.#message_id
+    }
+
+    /**
      * 机器人qq号
      * @return {number}
      */
@@ -173,7 +181,7 @@ export class Message {
 
     /**
      * 发送回复消息
-     * @param {Send[keyof Send][]} structsText 要发送的消息
+     * @param {Send[keyof Send][]|string} structsText 要发送的消息
      * @param {boolean} atSender 是否艾特发送者（仅限群组）
      * @return {Promise<void>}
      */
