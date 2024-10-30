@@ -34,9 +34,6 @@ export class YuLu extends Plugin {
 
         //发送语录
         if (bot.checkCommand(message, '语录')) {
-            let re = await bot.Api.getGroupShutList(message.groupId)
-            console.log(re)
-
             let data = readJson(`./data/${message.groupId}.json`)
             if (!data) {
                 bot.Api.sendMessage('未收录任何语录', message.groupId)
@@ -46,6 +43,9 @@ export class YuLu extends Plugin {
             let yulu = data.yulu
             let qqId = data.qqId
             let headImg = await bot.Api.getHeadImage(qqId)
+            let nickName = (await bot.Api.getGroupMemberInfo(message.groupId, qqId)).nickname
+
+
             return
         }
     }

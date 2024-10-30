@@ -56,7 +56,7 @@ export class API {
     /**
      * 通过qq号获取头像
      * @param {number} id QQ号
-     * @return {Promise<string|null>}
+     * @return {Promise<string|null>} 返回图片的raw数据
      */
     async getHeadImage (id) {
         let imgUrl = `http://q.qlogo.cn/headimg_dl?dst_uin=${id}&spec=640&img_type=jpg`
@@ -114,6 +114,17 @@ export class API {
     }
 
     /**
+     * 获取机器人在群组中是否有管理员权限
+     * @param {number} groupId 群号
+     * @returns {Promise<boolean>}
+     */
+    async getBotAdminInfo(groupId){
+        let re = await this.getBotInfo()
+        re = await this.getGroupMemberInfo(groupId, re.user_id)
+        return re.role === 'admin';
+    }
+
+    /**
      * 获取某个QQ号的信息
      * @param {number} id QQ号
      * @return {Promise<{user_id: number, uid: string, nickname: string, age: number, qid: string, qqLevel: number, sex: 'female' | 'male' | 'unknown', long_nick: string, reg_time: number, is_vip: boolean, is_years_vip: boolean, vip_level: number, remark: string, status: number, login_days: number}>}
@@ -121,7 +132,6 @@ export class API {
     async getQQInfo (id) {
         return await this.#instance.get_stranger_info({ user_id: id })
     }
-
 
     /**
      * 获取群信息
@@ -156,9 +166,9 @@ export class API {
      *         user_id: number;
      *         nickname: string;
      *         card: string;
-     *         sex: "unknown";
+     *         sex: 'unknown';
      *         age: 0;
-     *         area: "";
+     *         area: '';
      *         level: number;
      *         qq_level: 0;
      *         join_time: number;
@@ -168,8 +178,8 @@ export class API {
      *         card_changeable: boolean;
      *         is_robot: boolean;
      *         shut_up_timestamp: number;
-     *         role: "owner" | "admin" | "member";
-     *         title: "";
+     *         role: 'owner' | 'admin' | 'member';
+     *         title: '';
      *     }[]>}
      */
     async getGroupMemberList (id) {
@@ -179,12 +189,14 @@ export class API {
     /**
      * 获取群禁言列表
      * @param {number} id 群号
-     * @return {Promise<{}>}
+     * @returns {Promise<{group_id: number, user_id: number, nickname: string, card: string, sex: 'unknown', age: 0, area: '', level: number, qq_level: 0, join_time: number, last_sent_time: number, title_expire_time: number, unfriendly: boolean, card_changeable: boolean, is_robot: boolean, shut_up_timestamp: number, role: ('owner'|'admin'|'member'), title: ''}[]>}
      */
-    async getGroupShutList(id){
-        return await this.#instance.get_group_shut_list({
-            group_id:id
+    async getGroupShutList (id) {
+        let list = await this.getGroupMemberList(id)
+        list = list.filter((value, index, array) => {
+            return value.shut_up_timestamp > 0
         })
+        return list
     }
 
     /**
@@ -195,5 +207,115 @@ export class API {
         return this.#instance
     }
 
+    /**
+     * 群组踢人
+     * @param {number} groupId 群号
+     * @param {number} memberId 被踢人QQ号
+     * @param {boolean} refuseToJoin 是否拒绝再次入群请求
+     * @returns {Promise<void>}
+     */
+    async setGroupKick (groupId, memberId, refuseToJoin = false) {
+        await this.#instance.set_group_kick({
+            group_id: groupId,
+            user_id: memberId,
+            reject_add_request: refuseToJoin
+        })
+    }
 
+    /**
+     * 群组单人禁言
+     * @param {number} groupId 群号
+     * @param {number} memberId 被禁言人QQ号
+     * @param {number} duration 禁言时长，单位秒，0为取消禁言
+     * @returns {Promise<void>}
+     */
+    async setGroupBan (groupId, memberId, duration = 600) {
+        await this.#instance.set_group_ban({
+            group_id: groupId,
+            user_id: memberId,
+            duration: duration
+        })
+    }
+
+    /**
+     * 群组全体禁言
+     * @param {number} groupId 群号
+     * @param {boolean} enable 是否禁言
+     * @returns {Promise<void>}
+     */
+    async setGroupWholeBan (groupId, enable = true) {
+        await this.#instance.set_group_whole_ban({
+            group_id: groupId,
+            enable: enable
+        })
+    }
+
+    /**
+     * 群组设置管理员
+     * @param {number} groupId 群号
+     * @param {number} memberId 管理员QQ号
+     * @param {boolean} enable true 为设置，false 为取消
+     * @returns {Promise<void>}
+     */
+    async setGroupAdmin (groupId, memberId, enable = true) {
+        await this.#instance.set_group_admin({
+            group_id: groupId,
+            user_id: memberId,
+            enable: enable
+        })
+    }
+
+    /**
+     * 设置成员群名片
+     * @param {number} groupId 群号
+     * @param {number} memberId 群成员QQ号
+     * @param {string} card 群名片
+     * @returns {Promise<void>}
+     */
+    async setGroupCard (groupId, memberId, card='') {
+        await this.#instance.set_group_card({
+            group_id: groupId,
+            user_id: memberId,
+            card: card
+        })
+    }
+
+    /**
+     * 设置群名
+     * @param {number} groupId 群号
+     * @param {string} name 群名
+     * @returns {Promise<void>}
+     */
+    async setGroupName(groupId, name) {
+        await this.#instance.set_group_name({
+            group_id: groupId,
+            group_name: name
+        })
+    }
+
+    /**
+     * 退出群组
+     * @param {number} groupId 群号
+     * @returns {Promise<void>}
+     */
+    async setGroupLeave(groupId) {
+        await this.#instance.set_group_leave({
+            group_id: groupId
+        })
+    }
+
+    /**
+     * 设置群组专属头衔
+     * @param {number} groupId 群号
+     * @param {number} memberId 群成员QQ号，不填或空字符串表示删除专属头衔
+     * @param {string} title 群组专属头衔
+     * @returns {Promise<void>}
+     */
+    async setGroupSpecialTitle(groupId, memberId, title='') {
+        await this.#instance.set_group_special_title({
+            group_id: groupId,
+            user_id: memberId,
+            special_title: title
+        })
+    }
 }
