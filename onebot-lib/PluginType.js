@@ -16,4 +16,13 @@ export class Plugin {
      * @return {Promise<void>}
      */
     async run (bot, message) {}
+
+    /**
+     * 返回插件的data目录
+     * @return {string} 为相对路径
+     * @constructor
+     */
+    get pluginDataPath () {
+        return `./data/${this.name}/`
+    }
 }

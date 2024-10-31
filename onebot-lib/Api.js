@@ -56,7 +56,7 @@ export class API {
     /**
      * 通过qq号获取头像
      * @param {number} id QQ号
-     * @return {Promise<string|null>} 返回图片的raw数据
+     * @return {Promise<Buffer|null>} 返回图片的raw数据
      */
     async getHeadImage (id) {
         let imgUrl = `http://q.qlogo.cn/headimg_dl?dst_uin=${id}&spec=640&img_type=jpg`

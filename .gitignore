@@ -48,3 +48,4 @@ htmlcov/
 
 napcat
 node_modules
+/data/
